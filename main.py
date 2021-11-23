@@ -1,3 +1,5 @@
+from pydriller import Repository
+
 from DataCollectors.ScraperGit import Collector
 
 repo = 'https://github.com/ipfs/go-ipfs.git'
@@ -9,18 +11,10 @@ def print_hi(name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    for commit in Repository('path/to/the/repo').traverse_commits():
-        print(
-            'The commit {} has been modified by {}, '
-            'committed by {} in date {}'.format(
-                commit.hash,
-                commit.author.name,
-                commit.committer.name,
-                commit.committer_date
-            )
-        )
-    print_hi('PyCharm')
+    beg = '64b532fbb14145557dda7cb7986daea1e156f76d'
+    end = '0c2f9d5950c4245d89fcaf39dd1baa754587231b'
     a = Collector(repo)
-    a.getLineChanges()
+    b = a.getLineChanges(beg, end)
+    print(a.parseByFolder(b))
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

@@ -10,8 +10,20 @@ class Collector:
                             from_commit=beg,
                             to_commit=end)
         added_count = metric.count_added()
-        added_max = metric.max_added()
-        added_avg = metric.avg_added()
-        print('Total lines added per file: {}'.format(added_count))
-        print('Maximum lines added per file: {}'.format(added_max))
-        print('Average lines added per file: {}'.format(added_avg))
+        return added_count
+
+    def parseByFolder(self, originalCount):
+        dic = {}
+        for name in originalCount:
+            if(name == None):
+                continue
+            if '/' in name:
+                parent = name[:name.find('/')]
+                child = name[name.find('/')+1:]
+                if parent not in dic:
+                    dic[parent] = {}
+                dic[parent][child] = originalCount[name]
+                dic[parent] = self.parseByFolder(dic[parent])
+            else:
+                dic[name] = originalCount[name]
+        return dic
