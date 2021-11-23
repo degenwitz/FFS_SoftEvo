@@ -15,6 +15,9 @@ if __name__ == '__main__':
     end = '0c2f9d5950c4245d89fcaf39dd1baa754587231b'
     a = Collector(repo)
     b = a.getLineChanges(beg, end)
-    print(a.parseByFolder(b))
+    c = a.parseByFolder(b)
+    for subdic in c:
+        if type(c[subdic]) == dict:
+            print(subdic, a.linesChangedInFolder(c[subdic]))
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

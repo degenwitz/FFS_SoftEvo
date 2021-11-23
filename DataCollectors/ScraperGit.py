@@ -27,3 +27,12 @@ class Collector:
             else:
                 dic[name] = originalCount[name]
         return dic
+
+    def linesChangedInFolder(self, parsedFolder):
+        count = 0
+        for entry in parsedFolder.values():
+            if type(entry) == dict:
+                count += self.linesChangedInFolder(entry)
+            else:
+                count += entry
+        return count
