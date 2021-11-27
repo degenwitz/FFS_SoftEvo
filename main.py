@@ -69,6 +69,9 @@ if __name__ == '__main__':
             continue # file has been added later -> discard
 
         file_dict_combined[file_name] = {**file_dict_start[file_name], **file_dict_end[file_name]}
+        file_dict_combined[file_name]['delta_nloc'] = file_dict_combined[file_name]['end_nloc'] - file_dict_combined[file_name]['start_nloc']
+        file_dict_combined[file_name]['delta_token_count'] = file_dict_combined[file_name]['end_token_count'] - file_dict_combined[file_name]['start_token_count']
+        file_dict_combined[file_name]['delta_function_count'] = file_dict_combined[file_name]['end_function_count'] - file_dict_combined[file_name]['start_function_count']
         file_dict_combined[file_name]['modified'] = 0 # initialise modified column for later use..
 
     for commit in repo.traverse_commits():
