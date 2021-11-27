@@ -134,3 +134,25 @@ if __name__ == '__main__':
     print('\nThis are the 10 files with the highest complexity (candidates for hotspots):')
     print(df_sorted_complexity.head(10))
 
+    # visualize complexity trends of selected hotspot files:
+    fig, axs = plt.subplots(nrows=10, ncols=1, figsize=(10, 20), sharex=True)
+
+    counter = -1
+    for ax in axs.reshape(-1):
+        counter += 1
+        row = df_sorted_complexity.iloc[counter]
+
+        #x = [x['timestamp'] for x in row.modifications]
+        x = [x for x in range(len(row.modifications))]
+        y = [y['nloc'] for y in row.modifications]
+        y_added = [y['added_lines'] for y in row.modifications]
+        y_deleted = [y['deleted_lines'] for y in row.modifications]
+        ax.bar(x, y_added, label='added')
+        ax.bar(x, y_deleted, label='deleted', bottom=[-y for y in y_deleted])
+        ax.legend()
+        ax.set_title(row.name)
+
+    plt.savefig('results/complexity_trends', bbox_inches='tight')
+
+
+
