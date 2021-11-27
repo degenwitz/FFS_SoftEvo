@@ -1,0 +1,2 @@
+- we restrict our file selection to .go files
+- we only consider files that were present at the start and end commit (note: we lose some files due to file structure changes)
