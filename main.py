@@ -24,37 +24,65 @@ if __name__ == '__main__':
     commit_count = get_commit_count(repo)
     print(f'- There are a total of {commit_count} commits.\n   - first commit: {first_commit.hash}\n   - last commit: {last_commit.hash}')
 
-    # list with all existing files in the repo
-    files = get_list_of_files(repo_path, last_commit.hash, ['go'])
-    print(f'- Files of attention: {len(files)}')
+    # checkout first commit and get list of files
+    files_first_commit = get_list_of_files(repo_path, first_commit.hash, ['go'])
+    print(f'- # Files at first commit: {len(files_first_commit)}')
 
-    file_data = {}
-    for file_name in files:
+    file_dict_start = {}
+    for file_name in files_first_commit:
         file_information = lizard.analyze_file(file_name)
         functions = []
         for function in file_information.function_list:
             functions.append(function.__dict__)
         file_name_without_prefix = file_name.replace(file_prefix, '')
-        file_data[file_name_without_prefix] = {
-            'modified': 0,
-            'nloc': file_information.nloc,
-            'token_count': file_information.token_count,
-            'function_count': len(functions),
-            'functions': functions
+        file_dict_start[file_name_without_prefix] = {
+            'start_nloc': file_information.nloc,
+            'start_token_count': file_information.token_count,
+            'start_function_count': len(functions),
+            'start_functions': functions
         }
+
+    # checkout last commit and get list of files
+    files_last_commit = get_list_of_files(repo_path, last_commit.hash, ['go'])
+    print(f'- # Files at last commit: {len(files_last_commit)}')
+
+    file_dict_end = {}
+    for file_name in files_last_commit:
+        file_information = lizard.analyze_file(file_name)
+        functions = []
+        for function in file_information.function_list:
+            functions.append(function.__dict__)
+        file_name_without_prefix = file_name.replace(file_prefix, '')
+        file_dict_end[file_name_without_prefix] = {
+            'end_nloc': file_information.nloc,
+            'end_token_count': file_information.token_count,
+            'end_function_count': len(functions),
+            'end_functions': functions
+        }
+
+    # at this point we have two dictionaries 'file_dict_start' and 'file_dict_end' with static file metrics from the first
+    # resp. last commit. Now we merge these two dicts together and discard all the files that were not present at the
+    # start and end commit
+    file_dict_combined = {}
+    for file_name in file_dict_end.keys():
+        if file_name not in file_dict_start:
+            continue # file has been added later -> discard
+
+        file_dict_combined[file_name] = {**file_dict_start[file_name], **file_dict_end[file_name]}
+        file_dict_combined[file_name]['modified'] = 0 # initialise modified column for later use..
 
     for commit in repo.traverse_commits():
         for m in commit.modified_files:
             file_name = m.new_path
-            if file_name not in file_data:
+            if file_name not in file_dict_combined:
                 # modified file does not exist at current commit
                 continue
-            file_data[file_name]['modified'] += 1
+            file_dict_combined[file_name]['modified'] += 1
 
     # convert to dataframe and save as .csv
-    df = pd.DataFrame.from_dict(file_data, orient='index')
+    df = pd.DataFrame.from_dict(file_dict_combined, orient='index')
     df.to_csv('results/file_list.csv', encoding='utf-8', index=True)
-
+    '''
     # naive plotting of complexity hotspots
     fig, ax = plt.subplots(figsize=(10,10))
     ax.scatter(df['nloc'], df['modified'])
@@ -62,3 +90,4 @@ if __name__ == '__main__':
     ax.set_ylabel('modifications')
     ax.set_title('Complexity hotspots')
     plt.savefig('results/complexity_hotspots', bbox_inches='tight')
+    '''
