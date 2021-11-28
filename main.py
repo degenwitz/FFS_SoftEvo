@@ -2,7 +2,7 @@ from datetime import date, timedelta, datetime
 import os
 from pydriller import Repository, Git
 from DataCollectors.ScraperGit import Collector
-from helpers import get_first_and_last_commit, get_commit_count, get_list_of_files
+from helpers import get_first_and_last_commit, get_commit_count, get_list_of_files, check_if_commit_is_fix
 import lizard
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -76,10 +76,14 @@ if __name__ == '__main__':
         file_dict_combined[file_name]['delta_token_count'] = file_dict_combined[file_name]['end_token_count'] - file_dict_combined[file_name]['start_token_count']
         file_dict_combined[file_name]['delta_function_count'] = file_dict_combined[file_name]['end_function_count'] - file_dict_combined[file_name]['start_function_count']
         file_dict_combined[file_name]['modification_count'] = 0 # initialise modification_count column for later use..
+        file_dict_combined[file_name]['fix_count'] = 0 # initialise fix_count column for later use..
         file_dict_combined[file_name]['modifications'] = [] # initialise modifications column for later use..
         file_dict_combined[file_name]['coupling'] = {} # initialise coupling column for later use..
 
     for commit in repo.traverse_commits():
+        # determine if commit is a fix through text analysis
+        is_fix_commit = check_if_commit_is_fix(commit.msg)
+
         for m in commit.modified_files:
             file_name = m.new_path
             if file_name not in file_dict_combined:
@@ -87,6 +91,10 @@ if __name__ == '__main__':
                 continue
             # count up the modification_count counter for this file
             file_dict_combined[file_name]['modification_count'] += 1
+
+            # count up fix counter if commit message is classified as fix
+            if is_fix_commit:
+                file_dict_combined[file_name]['fix_count'] += 1
 
             file_dict_combined[file_name]['modifications'].append(
                 {
