@@ -163,4 +163,21 @@ if __name__ == '__main__':
     plt.savefig('results/complexity_trends', bbox_inches='tight')
 
 
+    # plot defective hotspots (bar chart)
+    df_sorted_fix_count = df.sort_values(['fix_count'], ascending=False)
+    top_ten = df_sorted_fix_count.head(10)
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.bar(top_ten.index, top_ten['fix_count'])
+    plt.xticks(rotation=90)
+    ax.set_title('defective hotspots')
+    plt.savefig('results/defective_hotspots', bbox_inches='tight')
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.scatter(df['start_nloc'], df['fix_count'])
+    ax.set_xlabel('complexity (lines of code)')
+    ax.set_ylabel('defectivity (fix modifications)')
+    ax.set_title('Defectivity and Complexity correlation')
+    plt.savefig('results/correlation', bbox_inches='tight')
+
 
