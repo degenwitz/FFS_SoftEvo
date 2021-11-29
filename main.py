@@ -1,10 +1,13 @@
 from datetime import date, timedelta, datetime
 import os
+
+import pandas
 from pydriller import Repository, Git
 from DataCollectors.ScraperGit import Collector
-from helpers import get_first_and_last_commit, get_commit_count, get_list_of_files, check_if_commit_is_fix
+from helpers import get_first_and_last_commit, get_commit_count, get_list_of_files, check_if_commit_is_fix, createConnectednessMatrix, findBiggest
 import lizard
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
@@ -12,11 +15,13 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
 file_prefix = os.getcwd() + '/go-ipfs/'
 
-#repo = 'https://github.com/ipfs/go-ipfs.git'
+#repo_path = 'https://github.com/ipfs/go-ipfs.git'
 repo_path = 'go-ipfs'
-branch = 'release-v0.10.0'
-start_date = datetime(2021, 1, 1)
+branch = 'origin/release-v0.10.0'
+start_date = datetime(2017, 10, 1)
 end_date = datetime.now() # the branch release-v0.10.0 was released on the 30th September 2021
+
+
 
 if __name__ == '__main__':
 
@@ -49,6 +54,7 @@ if __name__ == '__main__':
     files_last_commit = get_list_of_files(repo_path, last_commit.hash, ['go'])
     print(f'- # Files at last commit: {len(files_last_commit)}')
 
+
     file_dict_end = {}
     for file_name in files_last_commit:
         file_information = lizard.analyze_file(file_name)
@@ -79,6 +85,7 @@ if __name__ == '__main__':
         file_dict_combined[file_name]['fix_count'] = 0 # initialise fix_count column for later use..
         file_dict_combined[file_name]['modifications'] = [] # initialise modifications column for later use..
         file_dict_combined[file_name]['coupling'] = {} # initialise coupling column for later use..
+        file_dict_combined[file_name]['top_logical_connection'] = ()
 
     for commit in repo.traverse_commits():
         # determine if commit is a fix through text analysis
@@ -114,6 +121,41 @@ if __name__ == '__main__':
                     file_dict_combined[file_name]['coupling'][other_file_name] += 1
                 else:
                     file_dict_combined[file_name]['coupling'][other_file_name] = 1
+
+
+    #logical connected files detecting
+    connectedGraph, dic_of_files = createConnectednessMatrix(repo, len(files_last_commit), file_dict_combined)
+    res = findBiggest(connectedGraph, dic_of_files, file_dict_combined)
+    candidates = []
+    i_coupling = 0
+    while(len(candidates) < 10):
+        file = res[-1*i_coupling]
+        try:
+            if file_dict_combined[file[0]]['modification_count'] > 4:
+                candidates.append(file)
+        except:
+            pass
+        i_coupling += 1
+    x_achse =  [x[2]*100 for x in candidates]
+    y_achse = [x[3]*100 for x in candidates]
+    print(candidates)
+    color = np.random.rand(10)
+    fig, ax = plt.subplots(figsize=(10,10))
+    df = pandas.DataFrame({
+        'X':x_achse,
+        'Y':y_achse,
+        'Colors': color,
+        'bubble size': np.ones(10)*300
+    })
+    plt.scatter('X','Y', data=df)
+    plt.scatter('X', 'Y', data=df)
+    plt.xlabel("Percentage of commits of a that change a and b", size=16)
+    plt.ylabel("Percentage of commits of b that change a and b", size=16)
+    plt.title("logical coupling hotspot candidates", size=18)
+
+    plt.savefig('results/complexity_cupling', bbox_inches='tight')
+
+
 
     # convert to dataframe and save as .csv
     df = pd.DataFrame.from_dict(file_dict_combined, orient='index')
@@ -161,6 +203,7 @@ if __name__ == '__main__':
         ax.set_title(row.name)
 
     plt.savefig('results/complexity_trends', bbox_inches='tight')
+
 
 
 
