@@ -15,7 +15,7 @@ file_prefix = os.getcwd() + '/go-ipfs/'
 #repo = 'https://github.com/ipfs/go-ipfs.git'
 repo_path = 'go-ipfs'
 branch = 'release-v0.10.0'
-start_date = datetime(2014, 1, 1)
+start_date = datetime(2017, 10, 1)
 end_date = datetime.now() # the branch release-v0.10.0 was released on the 30th September 2021
 
 if __name__ == '__main__':
