@@ -177,7 +177,7 @@ if __name__ == '__main__':
     # Task 1.6) ranking of complexity hotspots
     def compute_complexity(row):
         # arbitrary chosen weights for complexity metric..
-        return row['end_nloc']+ row['delta_nloc'] + (row['modification_count']*20)
+        return row['end_nloc'] + (row['delta_nloc']*3) + (row['modification_count']*20)
 
     df['complexity_metric'] = df.apply(lambda row: compute_complexity(row), axis=1)
     df_sorted_complexity = df.sort_values(['complexity_metric'], ascending=False)
@@ -204,6 +204,23 @@ if __name__ == '__main__':
 
     plt.savefig('results/complexity_trends', bbox_inches='tight')
 
+
+    # plot defective hotspots (bar chart)
+    df_sorted_fix_count = df.sort_values(['fix_count'], ascending=False)
+    top_ten = df_sorted_fix_count.head(10)
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.bar(top_ten.index, top_ten['fix_count'])
+    plt.xticks(rotation=90)
+    ax.set_title('defective hotspots')
+    plt.savefig('results/defective_hotspots', bbox_inches='tight')
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.scatter(df['start_nloc'], df['fix_count'])
+    ax.set_xlabel('complexity (lines of code)')
+    ax.set_ylabel('defectivity (fix modifications)')
+    ax.set_title('Defectivity and Complexity correlation')
+    plt.savefig('results/correlation', bbox_inches='tight')
 
 
 

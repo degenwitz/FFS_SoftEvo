@@ -33,10 +33,6 @@ def get_list_of_files(repo_path, last_commit_hash, file_types=None):
     else:
         return files
 
-
-def check_if_commit_is_fix(a):
-    return True
-
 def createConnectednessMatrix(repo, amountOfFiles, file_dict_combined):
     connectedGraph = np.zeros((amountOfFiles, amountOfFiles),
                           dtype = np.float)
@@ -79,3 +75,12 @@ def findBiggest(connectedGrap, dic_of_files, file_dict_combined):
         except:
             pass
     return sorted(list_of_results, key=lambda x:x[2])
+    
+def check_if_commit_is_fix(msg):
+    # Note: this can be improved, at the moment it is very trivial
+    words = msg.replace('(', ' ').lower().split(' ')
+    if 'fix' in words or 'fix:' in words:
+        return True
+    else:
+        return False
+
