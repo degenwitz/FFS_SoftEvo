@@ -15,7 +15,7 @@ file_prefix = os.getcwd() + '/go-ipfs/'
 #repo = 'https://github.com/ipfs/go-ipfs.git'
 repo_path = 'go-ipfs'
 branch = 'release-v0.10.0'
-start_date = datetime(2021, 1, 1)
+start_date = datetime(2014, 1, 1)
 end_date = datetime.now() # the branch release-v0.10.0 was released on the 30th September 2021
 
 if __name__ == '__main__':
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     # Task 1.6) ranking of complexity hotspots
     def compute_complexity(row):
         # arbitrary chosen weights for complexity metric..
-        return row['end_nloc']+ row['delta_nloc'] + (row['modification_count']*20)
+        return row['end_nloc'] + (row['delta_nloc']*3) + (row['modification_count']*20)
 
     df['complexity_metric'] = df.apply(lambda row: compute_complexity(row), axis=1)
     df_sorted_complexity = df.sort_values(['complexity_metric'], ascending=False)
