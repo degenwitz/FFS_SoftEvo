@@ -33,7 +33,7 @@ def get_list_of_files(repo_path, last_commit_hash, file_types=None):
 
 def check_if_commit_is_fix(msg):
     # Note: this can be improved, at the moment it is very trivial
-    words = msg.split(' ')
+    words = msg.replace('(', ' ').lower().split(' ')
     if 'fix' in words or 'fix:' in words:
         return True
     else:
